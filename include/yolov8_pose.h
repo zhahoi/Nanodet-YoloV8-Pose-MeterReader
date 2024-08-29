@@ -60,7 +60,7 @@ public:
     static bool hasGPU;
 
     int detect_yolov8(const cv::Mat& bgr, std::vector<Object>& objects); 
-    bool process_objects(const cv::Mat& image, const std::vector<Object>& objs, const std::vector<std::vector<unsigned int>>& KPS_COLORS, float& scale_value);
+    void process_objects(const cv::Mat& image, const std::vector<Object>& objs, const std::vector<std::vector<unsigned int>>& KPS_COLORS, float& scale_value);
     bool get_results(const std::vector<cv::Mat>& meters_image, std::vector<float>& meterScales);
     cv::Mat result_visualizer(const cv::Mat& bgr, const std::vector<ObjectDetect>& objects_remains, const std::vector<float> scale_values);
     std::vector<cv::Mat> cut_roi_img(const cv::Mat& bgr, const std::vector<ObjectDetect>& objects);
