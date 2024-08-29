@@ -13,7 +13,7 @@
 #define DET_BIN "/home/hit/Project/YoloV8Pose/weights/nanodet.bin"
 #define YOLOV8_PARAM "/home/hit/Project/YoloV8Pose/weights/yolov8s-pose-opt.param"
 #define YOLOV8_BIN "/home/hit/Project/YoloV8Pose/weights/yolov8s-pose-opt.bin"
-#define SAVE_DIR "/home/hit/Project/YoloV8Pose/outputs"
+#define SAVE_DIR "/home/hit/Project/YoloV8Pose/outputs/"
 
 std::unique_ptr<NanoDet> nanoDet(new NanoDet(DET_PARAM, DET_BIN, false));
 std::unique_ptr<Yolov8Pose> yolov8Pose(new Yolov8Pose(YOLOV8_PARAM, YOLOV8_BIN, false));
