@@ -39,11 +39,11 @@ std::vector<cv::Mat> Yolov8Pose::cut_roi_img(const cv::Mat& bgr, const std::vect
 		fprintf(stderr, "%d = %.5f at %.2f %.2f %.2f x %.2f\n", obj.label, obj.prob,
 			obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height);
 
-		// ÏŞÖÆ ROI ÔÚÍ¼Ïñ±ß½çÄÚ
+		// é™åˆ¶ ROI åœ¨å›¾åƒè¾¹ç•Œå†…
 		cv::Rect roi = obj.rect;
-		roi = roi & cv::Rect(0, 0, image.cols, image.rows);  // ĞŞÕıÎª intersection
+		roi = roi & cv::Rect(0, 0, image.cols, image.rows);  // ä¿®æ­£ä¸º intersection
 
-		// Èç¹ûµ÷ÕûºóµÄ ROI ÈÔÓĞÓĞĞ§ÇøÓò£¬Ôò½øĞĞ²Ã¼ô
+		// å¦‚æœè°ƒæ•´åçš„ ROI ä»æœ‰æœ‰æ•ˆåŒºåŸŸï¼Œåˆ™è¿›è¡Œè£å‰ª
 		if (roi.width > 0 && roi.height > 0)
 		{
 			cv::Mat cut_image = image(roi);
@@ -63,7 +63,7 @@ std::vector<cv::Mat> Yolov8Pose::cut_roi_img(const cv::Mat& bgr, const std::vect
 
 float Yolov8Pose::getAngleRatio(cv::Point2f& start_locations, cv::Point2f& end_locations, cv::Point2f& pointer_head_location, cv::Point2f& center_location)
 {
-	// ¿Ì¶È¿ªÊ¼µãÓëxÖáÕı·½ÏòµÄ¼Ğ½Ç£¬¿Ì¶È½áÊøµãÓëxÖáÕı·½ÏòµÄ¼Ğ½Ç£¬¿Ì¶È¿ªÊ¼µãÓë¿Ì¶È½áÊøµãµÄ¼Ğ½Ç
+	// åˆ»åº¦å¼€å§‹ç‚¹ä¸xè½´æ­£æ–¹å‘çš„å¤¹è§’ï¼Œåˆ»åº¦ç»“æŸç‚¹ä¸xè½´æ­£æ–¹å‘çš„å¤¹è§’ï¼Œåˆ»åº¦å¼€å§‹ç‚¹ä¸åˆ»åº¦ç»“æŸç‚¹çš„å¤¹è§’
 	float beginning_x_angle = atan2(center_location.y - start_locations.y,
 		start_locations.x - center_location.x);
 	float end_x_angle = atan2(center_location.y - end_locations.y,
@@ -423,7 +423,7 @@ bool Yolov8Pose::process_objects(const cv::Mat& image, const std::vector<Object>
 		{
 
 			cv::Mat pointer_rect = image(obj.rect);
-			// »ñÈ¡Ö¸ÕëµÄÖ±Ïß
+			// è·å–æŒ‡é’ˆçš„ç›´çº¿
 			getLines = getPointerLines(pointer_rect, obj.rect, pointer_line);
 			// getCenterLocation(pointer_rect);
 			// cv::circle(res, {meter_points.center_location.x, meter_points.center_location.y}, 2, {128,  153, 255}, -1);
@@ -477,20 +477,19 @@ bool Yolov8Pose::process_objects(const cv::Mat& image, const std::vector<Object>
 
 	if (getLines)
 	{
+		/*
 		circleCenter(end_point, start_point, pointer_line, center_point);
 
-		if ((center_point.x == -1) && (center_point.y == -1))  // Èç¹ûÖ¸ÕëÖ±Ïß´¹Ö±ÓÚxÖá,»òÕßÖ¸ÕëÆ½ĞĞÓÚÆğÊ¼µãÓëÖÕÖ¹µãÁ¬Ïß
+		if ((center_point.x == -1) && (center_point.y == -1))  // å¦‚æœæŒ‡é’ˆç›´çº¿å‚ç›´äºxè½´,æˆ–è€…æŒ‡é’ˆå¹³è¡Œäºèµ·å§‹ç‚¹ä¸ç»ˆæ­¢ç‚¹è¿çº¿
 		{
-			/*
-			// Ê¹ÓÃ¼ì²âÄ¿±ê¿òÀ´¹ÀËãÒÇ±íÖĞĞÄ
-			float r = (image.rows + image.cols) / 4;   // Çó±íÅÌ°ë¾¶
-			// ¹ÀËã±íÅÌÖĞĞÄ
-			center_point.x =  r;
-			center_point.y =  r;
-			*/
+			
+			// ä½¿ç”¨YoloPoseçš„å…³é”®ç‚¹æ¥è·å–ä¸­å¿ƒç‚¹
 			center_point.x = center_point_ori.x;
 			center_point.y = center_point_ori.y;
 		}
+		*/
+		center_point.x = center_point_ori.x;
+		center_point.y = center_point_ori.y;
 			
 		// calculate pointer_point
 		pointer_point = getPointerPoint(center_point, pointer_line);
@@ -542,7 +541,7 @@ cv::Mat Yolov8Pose::result_visualizer(const cv::Mat& bgr, const std::vector<Obje
 		}
 		
 		cv::Scalar color = cv::Scalar(237, 189, 101);
-		cv::rectangle(output_image, bounding_box, color);  // Ä¿±ê¿ò
+		cv::rectangle(output_image, bounding_box, color);  // ç›®æ ‡æ¡†
 
 		std::string class_name = "Meter";
 		cv::putText(output_image,
@@ -625,7 +624,7 @@ bool Yolov8Pose::getPointerLines(const cv::Mat& img, const cv::Rect_<float>& rec
 		/*
 		if (lines.size() == 0)
 		{
-			//MessageBox(NULL, "Î´¼ì²âµ½Ö±Ïß,ÕıÔÚ³¢ÊÔĞÂµÄ¼ì²â·½·¨", "ÌáÊ¾", MB_OK);
+			//MessageBox(NULL, "æœªæ£€æµ‹åˆ°ç›´çº¿,æ­£åœ¨å°è¯•æ–°çš„æ£€æµ‹æ–¹æ³•", "æç¤º", MB_OK);
 			cv::HoughLinesP(thining_img, lines, 1, CV_PI / 180, 45, 30, maxLineGrap);
 			for (int i = 0; i < lines.size(); i++)
 			{
@@ -667,10 +666,10 @@ bool Yolov8Pose::Thining_Rosenfeld(cv::Mat& src, cv::Mat& dst)
 {
 	if (src.type() != CV_8UC1)
 	{
-		printf("Ö»ÄÜ´¦Àí¶şÖµ»ò»Ò¶ÈÍ¼Ïñ\n");
+		printf("åªèƒ½å¤„ç†äºŒå€¼æˆ–ç°åº¦å›¾åƒ\n");
 		return false;
 	}
-	//·ÇÔ­µØ²Ù×÷Ê±ºò£¬copy srcµ½dst
+	//éåŸåœ°æ“ä½œæ—¶å€™ï¼Œcopy srcåˆ°dst
 	if (dst.data != src.data)
 	{
 		src.copyTo(dst);
@@ -678,7 +677,7 @@ bool Yolov8Pose::Thining_Rosenfeld(cv::Mat& src, cv::Mat& dst)
 
 	int i, j, n;
 	int width, height;
-	//Ö®ËùÒÔ¼õ1£¬ÊÇ·½±ã´¦Àí8ÁÚÓò£¬·ÀÖ¹Ô½½ç
+	//ä¹‹æ‰€ä»¥å‡1ï¼Œæ˜¯æ–¹ä¾¿å¤„ç†8é‚»åŸŸï¼Œé˜²æ­¢è¶Šç•Œ
 	width = src.cols - 1;
 	height = src.rows - 1;
 	int step = src.step;
@@ -690,7 +689,7 @@ bool Yolov8Pose::Thining_Rosenfeld(cv::Mat& src, cv::Mat& dst)
 
 	while (1)
 	{
-		//·ÖËÄ¸ö×Óµü´ú¹ı³Ì£¬·Ö±ğ¶ÔÓ¦±±£¬ÄÏ£¬¶«£¬Î÷ËÄ¸ö±ß½çµãµÄÇé¿ö
+		//åˆ†å››ä¸ªå­è¿­ä»£è¿‡ç¨‹ï¼Œåˆ†åˆ«å¯¹åº”åŒ—ï¼Œå—ï¼Œä¸œï¼Œè¥¿å››ä¸ªè¾¹ç•Œç‚¹çš„æƒ…å†µ
 		ifEnd = false;
 		for (n = 0; n < 4; n++)
 		{
@@ -702,7 +701,7 @@ bool Yolov8Pose::Thining_Rosenfeld(cv::Mat& src, cv::Mat& dst)
 				for (j = 1; j < width; j++)
 				{
 					uchar* p = img + j;
-					//Èç¹ûpµãÊÇ±³¾°µã»òÕßÇÒÎª·½Ïò±ß½çµã£¬ÒÀ´ÎÎª±±ÄÏ¶«Î÷£¬¼ÌĞøÑ­»·
+					//å¦‚æœpç‚¹æ˜¯èƒŒæ™¯ç‚¹æˆ–è€…ä¸”ä¸ºæ–¹å‘è¾¹ç•Œç‚¹ï¼Œä¾æ¬¡ä¸ºåŒ—å—ä¸œè¥¿ï¼Œç»§ç»­å¾ªç¯
 					if (p[0] == 0 || p[dir[n]] > 0) continue;
 					p2 = p[-step] > 0 ? 1 : 0;
 					p3 = p[-step + 1] > 0 ? 1 : 0;
@@ -712,7 +711,7 @@ bool Yolov8Pose::Thining_Rosenfeld(cv::Mat& src, cv::Mat& dst)
 					p7 = p[step - 1] > 0 ? 1 : 0;
 					p8 = p[-1] > 0 ? 1 : 0;
 					p9 = p[-step - 1] > 0 ? 1 : 0;
-					//8 simpleÅĞ¶¨
+					//8 simpleåˆ¤å®š
 					int is8simple = 1;
 					if (p2 == 0 && p6 == 0)
 					{
@@ -746,10 +745,10 @@ bool Yolov8Pose::Thining_Rosenfeld(cv::Mat& src, cv::Mat& dst)
 					}
 					int adjsum;
 					adjsum = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
-					//ÅĞ¶ÏÊÇ·ñÊÇÁÚ½Óµã»ò¹ÂÁ¢µã,0,1·Ö±ğ¶ÔÓÚÄÇ¸ö¹ÂÁ¢µãºÍ¶Ëµã
+					//åˆ¤æ–­æ˜¯å¦æ˜¯é‚»æ¥ç‚¹æˆ–å­¤ç«‹ç‚¹,0,1åˆ†åˆ«å¯¹äºé‚£ä¸ªå­¤ç«‹ç‚¹å’Œç«¯ç‚¹
 					if (adjsum != 1 && adjsum != 0 && is8simple == 1)
 					{
-						dst.at<uchar>(i, j) = 0; //Âú×ãÉ¾³ıÌõ¼ş£¬ÉèÖÃµ±Ç°ÏñËØÎª0
+						dst.at<uchar>(i, j) = 0; //æ»¡è¶³åˆ é™¤æ¡ä»¶ï¼Œè®¾ç½®å½“å‰åƒç´ ä¸º0
 						ifEnd = true;
 					}
 				}
@@ -759,63 +758,63 @@ bool Yolov8Pose::Thining_Rosenfeld(cv::Mat& src, cv::Mat& dst)
 		//printf("\n");
 		//PrintMat(dst);
 		//PrintMat(dst);
-		//ÒÑ¾­Ã»ÓĞ¿ÉÒÔÏ¸»¯µÄÏñËØÁË£¬ÔòÍË³öµü´ú
+		//å·²ç»æ²¡æœ‰å¯ä»¥ç»†åŒ–çš„åƒç´ äº†ï¼Œåˆ™é€€å‡ºè¿­ä»£
 		if (!ifEnd) break;
 	}
 
-	return true;  // ·µ»Ø´¦Àí³É¹¦
+	return true;  // è¿”å›å¤„ç†æˆåŠŸ
 }
 
 
 void Yolov8Pose::circleCenter(cv::Point2f point2, cv::Point2f point1, cv::Vec4i line3, cv::Point2f& center_point)
 {
-	float k3 = float(line3[3] - line3[1]) / float(line3[2] - line3[0]);; // Ö¸ÕëÖ±ÏßµÄĞ±ÂÊ
+	float k3 = float(line3[3] - line3[1]) / float(line3[2] - line3[0]);; // æŒ‡é’ˆç›´çº¿çš„æ–œç‡
 	std::cout << line3[3] << ", " << line3[1] << ", " << line3[2] << ", " << line3[0] << ", " << k3 << std::endl;
 
-	const float epsilon = 1e-6; // ¸¡µãÊı±È½ÏµÄÈİÈÌ¶È
+	const float epsilon = 1e-6; // æµ®ç‚¹æ•°æ¯”è¾ƒçš„å®¹å¿åº¦
 
-	if ((std::fabs(line3[2] - line3[0]) < epsilon) || (k3 < -10.0f)) // ¼ì²éÊÇ·ñÎª´¹Ö±Ïß»òÕß½Ó½ü´¹Ïß
+	if ((std::fabs(line3[2] - line3[0]) < epsilon) || (k3 < -10.0f)) // æ£€æŸ¥æ˜¯å¦ä¸ºå‚ç›´çº¿æˆ–è€…æ¥è¿‘å‚çº¿
 	{
-		std::cout << "Ö¸ÕëÖ±Ïß´¹Ö±£¬Ğ±ÂÊ²»´æÔÚ" << std::endl;
-		// ·µ»ØÌØÊâÖµ±íÊ¾ÎŞ·¨¼ÆËã
+		std::cout << "æŒ‡é’ˆç›´çº¿å‚ç›´ï¼Œæ–œç‡ä¸å­˜åœ¨" << std::endl;
+		// è¿”å›ç‰¹æ®Šå€¼è¡¨ç¤ºæ— æ³•è®¡ç®—
 		center_point.x = -1;
 		center_point.y = -1;
 	}
-	else  // Ö¸ÕëÖ±Ïß²»´¹Ö±ÓÚxÖá£¬¼´Ğ±ÂÊ´æÔÚ
+	else  // æŒ‡é’ˆç›´çº¿ä¸å‚ç›´äºxè½´ï¼Œå³æ–œç‡å­˜åœ¨
 	{
 		if ((point2.y - point1.y) == 0)
 		{
-			std::cout << "±ê¶¨µÄÆğÊ¼µãºÍÖÕµãÎªÒ»ÌõÖ±ÏßÉÏµÄµã" << std::endl;
-			int line_k0_centerPoint_x = (point1.x + point2.x) / 2;		//µ±±ê¶¨µãÓëyÖáÆ½ĞĞÊ±µÄÖ±Ïß
+			std::cout << "æ ‡å®šçš„èµ·å§‹ç‚¹å’Œç»ˆç‚¹ä¸ºä¸€æ¡ç›´çº¿ä¸Šçš„ç‚¹" << std::endl;
+			int line_k0_centerPoint_x = (point1.x + point2.x) / 2;		//å½“æ ‡å®šç‚¹ä¸yè½´å¹³è¡Œæ—¶çš„ç›´çº¿
 			int y = float((k3 * (line_k0_centerPoint_x - line3[0])) + line3[1]);
 			center_point.x = line_k0_centerPoint_x;
 			center_point.y = y;
 		}
 		else
 		{
-			//ÇóÆğÊ¼µãµ½ÖÕµãÖ±ÏßµÄĞ±ÂÊ
+			//æ±‚èµ·å§‹ç‚¹åˆ°ç»ˆç‚¹ç›´çº¿çš„æ–œç‡
 			float k1 = float(point2.y - point1.y) / float(point2.x - point1.x);
-			//´¹Ïßline2µÄĞ±ÂÊÎª
+			//å‚çº¿line2çš„æ–œç‡ä¸º
 			float k2 = float(-1) / float(k1);
-			//´¹Ïßline2Óëline1Ïà½»µãÎª(x,y)
+			//å‚çº¿line2ä¸line1ç›¸äº¤ç‚¹ä¸º(x,y)
 			cv::Point2f line2(float((point2.x + point1.x) / 2), float((point2.y + point1.y) / 2));
-			std::cout << "ÆğÊ¼µãÓëÖÕµãµÄÖĞµã×ø±êÎª: (" << line2.x << ", " << line2.y << ")" << std::endl;
+			std::cout << "èµ·å§‹ç‚¹ä¸ç»ˆç‚¹çš„ä¸­ç‚¹åæ ‡ä¸º: (" << line2.x << ", " << line2.y << ")" << std::endl;
 
-			// ¼ì²éÖ¸ÕëÖ±ÏßºÍÖĞ´¹ÏßÊÇ·ñÆ½ĞĞ
+			// æ£€æŸ¥æŒ‡é’ˆç›´çº¿å’Œä¸­å‚çº¿æ˜¯å¦å¹³è¡Œ
 			if (std::fabs(k2 - k3) < epsilon)
 			{
-				std::cout << "Ö¸ÕëÖ±ÏßÓëÖĞ´¹ÏßÆ½ĞĞ£¬ÎŞ·¨È·¶¨Î¨Ò»µÄÔ²ĞÄ" << std::endl;
-				center_point.x = -1; // ·µ»ØÌØÊâÖµ±íÊ¾ÎŞ·¨¼ÆËã
+				std::cout << "æŒ‡é’ˆç›´çº¿ä¸ä¸­å‚çº¿å¹³è¡Œï¼Œæ— æ³•ç¡®å®šå”¯ä¸€çš„åœ†å¿ƒ" << std::endl;
+				center_point.x = -1; // è¿”å›ç‰¹æ®Šå€¼è¡¨ç¤ºæ— æ³•è®¡ç®—
 				center_point.y = -1;
 			}
 			else
 			{
-				//Ö¸ÕëÓëÖĞ´¹ÏßµÄ½»µãÎª
+				//æŒ‡é’ˆä¸ä¸­å‚çº¿çš„äº¤ç‚¹ä¸º
 				float x = float((k2 * line2.x) - (k3 * line3[0]) - line2.y + line3[1]) / float(k2 - k3);
 				float y = float(k3 * (x - line3[0])) + float(line3[1]);
 				x = fabs(x);
 				y = fabs(y);
-				std::cout << "Ô²ĞÄÎ»ÖÃÎªx: " << x << "  y: " << y << std::endl;
+				std::cout << "åœ†å¿ƒä½ç½®ä¸ºx: " << x << "  y: " << y << std::endl;
 				center_point.x = x;
 				center_point.y = y;
 			}
@@ -833,7 +832,7 @@ bool Yolov8Pose::isValidROI(const std::vector<ObjectDetect>& objects)
 		float width = object.rect.width;
 		float height = object.rect.height;
 
-		// È·±£¿í¶ÈºÍ¸ß¶È´óÓÚ0
+		// ç¡®ä¿å®½åº¦å’Œé«˜åº¦å¤§äº0
 		if (width <= 0 || height <= 0) {
 			std::cerr << "Invalid width or height in ROI." << std::endl;
 			return false;
@@ -861,23 +860,23 @@ bool Yolov8Pose::get_results(const std::vector<cv::Mat>& meters_image, std::vect
 	{
 		cv::Mat input_image = meters_image[i_num].clone();
 
-		// »ñÈ¡´¦Àí½á¹û, objects´æ·Åyolov8 pose Ä¿±ê½á¹û
+		// è·å–å¤„ç†ç»“æœ, objectså­˜æ”¾yolov8 pose ç›®æ ‡ç»“æœ
 		std::vector<Object> objects;
 		detect_yolov8(input_image, objects);
 
 		if (objects.size() == 0)
 		{
 			std::cerr << "Doesn't detect any objects for image " << i_num << std::endl;
-			return false;  // Á¢¼´ÖÕÖ¹²¢·µ»Ø false
+			return false;  // ç«‹å³ç»ˆæ­¢å¹¶è¿”å› false
 		}
 
 		try
 		{
-			// »ñÈ¡Ö¸ÕëÒÇ±íµÄµã
+			// è·å–æŒ‡é’ˆä»ªè¡¨çš„ç‚¹
 			float scale_value = 0.0f;
 			bool isGetResult = process_objects(input_image, objects, KPS_COLORS, scale_value);
 
-			// »ñÈ¡Ö¸ÕëÖµ
+			// è·å–æŒ‡é’ˆå€¼
 			if (isGetResult)
 			{
 				meterScales.push_back(scale_value);
@@ -890,11 +889,11 @@ bool Yolov8Pose::get_results(const std::vector<cv::Mat>& meters_image, std::vect
 		catch (const std::exception& e)
 		{
 			std::cerr << "Error processing image " << i_num << ": " << e.what() << std::endl;
-			return false;  // Á¢¼´ÖÕÖ¹²¢·µ»Ø false
+			return false;  // ç«‹å³ç»ˆæ­¢å¹¶è¿”å› false
 		}
 	}
 
-	return true;  // Èç¹ûËùÓĞÍ¼Ïñ¶¼³É¹¦´¦Àí£¬·µ»Ø true
+	return true;  // å¦‚æœæ‰€æœ‰å›¾åƒéƒ½æˆåŠŸå¤„ç†ï¼Œè¿”å› true
 }
 
 
@@ -903,11 +902,11 @@ cv::Point2f Yolov8Pose::getPointerPoint(cv::Point2f center_point, cv::Vec4i poin
 	cv::Point2f pointer_point1 = cv::Point2f(pointer_line[0], pointer_line[1]);
 	cv::Point2f pointer_point2 = cv::Point2f(pointer_line[2], pointer_line[3]);
 
-	// ¼ÆËãÁ½¸öµãµ½center_pointµÄÅ·¼¸ÀïµÃ¾àÀë
+	// è®¡ç®—ä¸¤ä¸ªç‚¹åˆ°center_pointçš„æ¬§å‡ é‡Œå¾—è·ç¦»
 	float distance1 = cv::norm(pointer_point1 - center_point);
 	float distance2 = cv::norm(pointer_point2 - center_point);
 
-	// ·µ»Ø¾àÀë¸üÔ¶µÄµã
+	// è¿”å›è·ç¦»æ›´è¿œçš„ç‚¹
 	if (distance1 > distance2)
 	{
 		return pointer_point1;
