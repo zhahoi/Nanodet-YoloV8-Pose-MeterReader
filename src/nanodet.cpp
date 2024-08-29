@@ -325,7 +325,7 @@ void NanoDet::draw_bboxes(const cv::Mat& bgr, const std::vector<BoxInfo>& bboxes
             cv::Point((bbox.x2 - effect_roi.x) * width_ratio, (bbox.y2 - effect_roi.y) * height_ratio)), color);
 
         char text[256];
-        sprintf_s(text, "%s %.1f%%", class_names[bbox.label], bbox.score * 100);
+        sprintf(text, "%s %.1f%%", class_names[bbox.label], bbox.score * 100);
 
         int baseLine = 0;
         cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.4, 1, &baseLine);
