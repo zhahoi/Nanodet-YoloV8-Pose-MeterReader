@@ -354,12 +354,11 @@ int Yolov8Pose::detect_yolov8(const cv::Mat& bgr, std::vector<Object>& objects)
 		img_h, img_w, hpad / 2, wpad / 2,
 		scale, scale, prob_threshold, nms_threshold);
 
-
 	return 0;
 }
 
 
-bool Yolov8Pose::process_objects(const cv::Mat& image, const std::vector<Object>& objs, const std::vector<std::vector<unsigned int>>& KPS_COLORS, float& scale_value)
+void Yolov8Pose::process_objects(const cv::Mat& image, const std::vector<Object>& objs, const std::vector<std::vector<unsigned int>>& KPS_COLORS, float& scale_value)
 {
 	cv::Mat res = image.clone();
 	// std::cout << "image size: " << res.size() << std::endl;
@@ -368,7 +367,7 @@ bool Yolov8Pose::process_objects(const cv::Mat& image, const std::vector<Object>
 
 	bool getLines = false;
 	cv::Vec4i pointer_line;
-	cv::Point2f start_point, end_point, center_point, pointer_point, center_point_ori;
+	cv::Point2f start_point, end_point, center_point, pointer_point, center_point_ori, pointer_point_ori;
 
 	for (auto& obj : objs) {
 
@@ -450,11 +449,11 @@ bool Yolov8Pose::process_objects(const cv::Mat& image, const std::vector<Object>
 						center_point_ori.x = kps_x;
 						center_point_ori.y = kps_y;
 					}
-					// if ((class_names[obj.label] == "pointer_rect") && (k == 1))
-					// {
-					// 	meter_points.pointer_locations.x = kps_x;
-					// 	meter_points.pointer_locations.y = kps_y;
-					// }
+					if ((class_names[obj.label] == "pointer_rect") && (k == 1))
+					{
+					 	pointer_point_ori.x = kps_x;
+					 	pointer_point_ori.y = kps_y;
+					}
 					if (class_names[obj.label] == "left_rect")
 					{
 						start_point.x = kps_x;
@@ -475,7 +474,7 @@ bool Yolov8Pose::process_objects(const cv::Mat& image, const std::vector<Object>
 	cv::waitKey(0);
 #endif
 
-	if (getLines)
+	if (getLines)  // 使用直线拟合的方式获取指针顶点
 	{
 		/*
 		circleCenter(end_point, start_point, pointer_line, center_point);
@@ -490,36 +489,40 @@ bool Yolov8Pose::process_objects(const cv::Mat& image, const std::vector<Object>
 		*/
 		center_point.x = center_point_ori.x;
 		center_point.y = center_point_ori.y;
-			
+
 		// calculate pointer_point
 		pointer_point = getPointerPoint(center_point, pointer_line);
 		// std::cout << "start_x: " <<  start_point.x  << ", " << "start_y" << start_point.y << std::endl;
 		// std::cout << "end_x: " <<  end_point.x  << ", " << "start_y" << end_point.y << std::endl;
 		// std::cout << "center_x: " <<  center_point.x  << ", " << "center_y" << center_point.y << std::endl;
-
-#ifdef VISUALIZER
-		cv::line(res, cv::Point(pointer_line[0], pointer_line[1]), cv::Point(pointer_line[2], pointer_line[3]), cv::Scalar(255, 255, 0), 1, cv::LINE_AA);
-		cv::circle(res, pointer_point, 3, cv::Scalar(255, 0, 0), -1);
-		cv::circle(res, center_point, 3, cv::Scalar(0, 0, 255), -1);
-		cv::circle(res, start_point, 3, cv::Scalar(15, 242, 235), -1);
-		cv::circle(res, end_point, 3, cv::Scalar(15, 242, 235), -1);
-
-		cv::imshow("image", res);
-		cv::waitKey(0);
-#endif
-
-		float angleRatio = getAngleRatio(start_point, end_point, pointer_point, center_point);
-		std::cout << "angleRatio: " << floatToString(angleRatio) + " Degrees" << std::endl;
-
-		scale_value = abs(getScaleValue(angleRatio));
-		std::cout << "scale_value: " << floatToString(scale_value) + " Mpa" << std::endl;
-
-		return true;
 	}
-	else
+	else  // 使用yolov8-pose来获取指针顶点
 	{
-		return false;
+		center_point.x = center_point_ori.x;
+		center_point.y = center_point_ori.y;
+
+		pointer_point.x = pointer_point_ori.x;
+		pointer_point.y = pointer_point_ori.y;
 	}
+
+// #ifdef VISUALIZER
+	cv::line(res, cv::Point(pointer_line[0], pointer_line[1]), cv::Point(pointer_line[2], pointer_line[3]), cv::Scalar(255, 255, 0), 1, cv::LINE_AA);
+	cv::circle(res, pointer_point, 3, cv::Scalar(255, 0, 0), -1);
+	cv::circle(res, center_point, 3, cv::Scalar(0, 0, 255), -1);
+	cv::circle(res, start_point, 3, cv::Scalar(15, 242, 235), -1);
+	cv::circle(res, end_point, 3, cv::Scalar(15, 242, 235), -1);
+
+	cv::imshow("image", res);
+	cv::waitKey(0);
+// #endif
+
+	float angleRatio = getAngleRatio(start_point, end_point, pointer_point, center_point);
+	// std::cout << "angleRatio: " << floatToString(angleRatio) + " Degrees" << std::endl;
+
+	scale_value = abs(getScaleValue(angleRatio));
+	// std::cout << "scale_value: " << floatToString(scale_value) + " Mpa" << std::endl;
+
+	return;
 }
 
 
@@ -531,13 +534,14 @@ cv::Mat Yolov8Pose::result_visualizer(const cv::Mat& bgr, const std::vector<Obje
 		cv::Rect bounding_box = objects_remains[i_results].rect;
 
 		float result;
+		// 根据不同指针仪表的特性，增加的一点补偿
 		if (scale_values[i_results] <= 0.50f)
 		{
 			result = scale_values[i_results] + 0.012f;  // 0.01f
 		}
 		else
 		{
-			result = scale_values[i_results] + 0.005f;  // 0.08f
+			result = scale_values[i_results] + 0.008f;  // 0.08f
 		}
 		
 		cv::Scalar color = cv::Scalar(237, 189, 101);
@@ -855,45 +859,43 @@ bool Yolov8Pose::isValidROI(const std::vector<ObjectDetect>& objects)
 bool Yolov8Pose::get_results(const std::vector<cv::Mat>& meters_image, std::vector<float>& meterScales)
 {
 	int meter_num = meters_image.size();
+	bool all_success = true;
 
 	for (int i_num = 0; i_num < meter_num; i_num++)
 	{
 		cv::Mat input_image = meters_image[i_num].clone();
 
+		// 清空 objects 以防止保留前一次循环的结果
+        std::vector<Object> objects;
+        objects.clear();
+
 		// 获取处理结果, objects存放yolov8 pose 目标结果
-		std::vector<Object> objects;
 		detect_yolov8(input_image, objects);
 
 		if (objects.size() == 0)
 		{
 			std::cerr << "Doesn't detect any objects for image " << i_num << std::endl;
-			return false;  // 立即终止并返回 false
+			all_success = false;// 记录失败，但不立即返回
+            continue; // 跳过该张图像，处理下一张
 		}
 
 		try
 		{
 			// 获取指针仪表的点
 			float scale_value = 0.0f;
-			bool isGetResult = process_objects(input_image, objects, KPS_COLORS, scale_value);
+			process_objects(input_image, objects, KPS_COLORS, scale_value);
 
 			// 获取指针值
-			if (isGetResult)
-			{
-				meterScales.push_back(scale_value);
-			}
-			else
-			{
-				return false;
-			}
+			meterScales.push_back(scale_value);
 		}
 		catch (const std::exception& e)
 		{
 			std::cerr << "Error processing image " << i_num << ": " << e.what() << std::endl;
-			return false;  // 立即终止并返回 false
+			all_success = false; // 记录失败
 		}
 	}
 
-	return true;  // 如果所有图像都成功处理，返回 true
+	return all_success;  // 返回是否所有图像都成功处理
 }
 
 
