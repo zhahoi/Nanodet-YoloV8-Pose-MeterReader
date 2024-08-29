@@ -1,5 +1,5 @@
-#include "nanodet.h"
 #include "yolov8_pose.h"
+#include "nanodet.h"
 
 #include <chrono>
 #include <iostream>
@@ -9,92 +9,155 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 
-#define DET_PARAM  "/home/hit/Project/MeterReader_Image/weights/nanodet.param"
-#define DET_BIN "/home/hit/Project/MeterReader_Image/weights/nanodet.bin"
-#define SEG_PARAM "/home/hit/Project/MeterReader_Image/weights/fastseg.param"
-#define SEG_BIN "/home/hit/Project/MeterReader_Image/weights/fastseg.bin"
-#define SAVE_DIR "/home/hit/Project/MeterReader_Image/outputs/"
-
-#define DET_PARAM  "C:/CPlusPlus/HuaRayDemo/weights/nanodet.param"
-#define DET_BIN "C:/CPlusPlus/HuaRayDemo/weights/nanodet.bin"
-#define YOLOV8_PARAM "C:/CPlusPlus/HuaRayDemo/weights/yolov8s-pose-opt.param"
-#define YOLOV8_BIN "C:/CPlusPlus/HuaRayDemo/weights/yolov8s-pose-opt.bin"
+#define DET_PARAM  "/home/hit/Project/YoloV8Pose/weights/nanodet.param"
+#define DET_BIN "/home/hit/Project/YoloV8Pose/weights/nanodet.bin"
+#define YOLOV8_PARAM "/home/hit/Project/YoloV8Pose/weights/yolov8s-pose-opt.param"
+#define YOLOV8_BIN "/home/hit/Project/YoloV8Pose/weights/yolov8s-pose-opt.bin"
+#define SAVE_DIR "/home/hit/Project/YoloV8Pose/outputs"
 
 std::unique_ptr<NanoDet> nanoDet(new NanoDet(DET_PARAM, DET_BIN, false));
 std::unique_ptr<Yolov8Pose> yolov8Pose(new Yolov8Pose(YOLOV8_PARAM, YOLOV8_BIN, false));
 
-#define SAVE_IMG
+// #define SAVE_IMG
 
-void detectProcess(const cv::Mat& input_image) {
-    cv::Mat img_copy = input_image.clone();
+void detectProcess(const cv::Mat& input_image, int index) {
+    if (input_image.empty()) {
+        std::cerr << "cv::imread read image failed" << std::endl;
+        return;
+    }
+
     std::vector<ObjectDetect> objects;
     object_rect effect_roi;
     cv::Mat resized_img;
-
-    nanoDet->resize_uniform(img_copy, resized_img, cv::Size(320, 320), effect_roi);
-
+    nanoDet->resize_uniform(input_image, resized_img, cv::Size(320, 320), effect_roi);
     auto results = nanoDet->detect(resized_img, 0.3, 0.3);  // 0.4, 0.3
-    nanoDet->convert_boxes(results, effect_roi, img_copy.cols, img_copy.rows, objects);
+    nanoDet->convert_boxes(results, effect_roi, input_image.cols, input_image.rows, objects);
 
     std::cout << "Object size: " << objects.size() << std::endl;
 
-    if (!objects.empty() && yolov8Pose->isValidROI(objects))
-    {
-        std::vector<cv::Mat> meters_image = yolov8Pose->cut_roi_img(img_copy, objects);
-        // ∂‘≤√ºÙµƒ“«±ÌºÏ≤‚Ω·π˚Ω¯––∂¡ ˝
+    if (!objects.empty() && yolov8Pose->isValidROI(objects)) {
+        std::vector<cv::Mat> meters_image = yolov8Pose->cut_roi_img(input_image, objects);
         std::vector<float> scale_values;
         bool isGet = yolov8Pose->get_results(meters_image, scale_values);
 
         if (isGet)
         {
-            cv::Mat save_frame = yolov8Pose->result_visualizer(img_copy, objects, scale_values);
-            cv::imshow("image", save_frame);
-        }
-        else
-        {
-            cv::imshow("image", img_copy);
+            for (const auto& scale_value:scale_values)
+            {
+                if (scale_value <= 0.50f)
+                {
+                    // result = scale_values[i_results] + 0.012f;  // 0.01f
+                    std::cout << "scale_value: " << yolov8Pose->floatToString(scale_value + 0.012f) + " Mpa" << std::endl;
+                }
+                else
+                {
+                    // result = scale_values[i_results] + 0.008f;  // 0.08f
+                    std::cout << "scale_value: " << yolov8Pose->floatToString(scale_value + 0.008f) + " Mpa" << std::endl;
+                }
+            }
+        }else{
+            std::cout << "No objects detected." << std::endl;
         }
 
-        // nanoDet->draw_bboxes(img_copy, results, effect_roi);
-        // cv::imshow("Frame", img_copy);
-        cv::waitKey(0);   // µ»¥˝1ms“‘¥¶¿Ìopencv¥∞ø⁄œ˚œ¢
+#ifdef SAVE_IMG
+        // Â¶ÇÊûúÈúÄË¶Å‰øùÂ≠òÊØè‰∏™Â§ÑÁêÜÂêéÁöÑÂõæÂÉèÔºåÂèØ‰ª•Â∞Ücv::imwriteÊîæÂú®Âæ™ÁéØÂÜÖÈÉ®ÔºåÂπ∂‰øÆÊîπÊñá‰ª∂Âêç‰ª•ÈÅøÂÖçË¶ÜÁõñ
+        cv::Mat save_frame = yolov8Pose->result_visualizer(input_image, objects, scale_values);
+        
+        // ‰øùÂ≠òÂ§ÑÁêÜÂêéÁöÑÂõæÂÉè
+        std::string save_path = std::string(SAVE_DIR) + std::to_string(index) + "_processed_image.jpg";
+        cv::imwrite(save_path, save_frame);
+        std::cout << "Saved processed image to " << save_path << std::endl;
+#else
+        // cv::Mat save_frame = yolov8Pose->result_visualizer(input_image, objects, scale_values);
+        // cv::imshow("save_frame", save_frame);
+        // cv::waitKey(0);
+    
+#endif
+    } else {
+        std::cout << "No objects detected." << std::endl;
     }
-    else
-    {
-        cv::imshow("image", img_copy);
-        cv::waitKey(0);   // µ»¥˝1ms“‘¥¶¿Ìopencv¥∞ø⁄œ˚œ¢
-    }
+}
 
-    return;
+std::vector<cv::Mat> ReadImages(const std::string& pattern) 
+{
+    std::vector<cv::String> fn;
+    cv::glob(pattern, fn, false);
+    std::vector<cv::Mat> images;
+    int count = fn.size(); // number of files in images folder
+    for (int i = 0; i < count; i++) {
+        images.emplace_back(cv::imread(fn[i]));
+    }
+    return images;
 }
 
 int main(int argc, char* argv[]) {
-    
-        //  ‰»ÎÕº∆¨¬∑æ∂
-    std::string path = "";
-
-    cv::Mat image = cv::imread(path);
-
-    if (image.empty()) {
-        std::cerr << "Could not open or find the image at " << path << std::endl;
+    if (argc < 3) {
+        std::cerr << "Usage: " << argv[0] << " <mode> <path>" << std::endl;
+        std::cerr << "Mode: single - Process a single image" << std::endl;
+        std::cerr << "Folder - Process all images in a folder" << std::endl;
         return -1;
     }
 
-    // º«¬ºø™ º ±º‰
-    // auto start = std::chrono::high_resolution_clock::now();
+    std::string mode = argv[1];
+    std::string path = argv[2];
 
-    // µ˜”√ detectProcess ∫Ø ˝
-    detectProcess(image);
+    int index = 0;
 
-    // º«¬ºΩ· ¯ ±º‰
-    // auto end = std::chrono::high_resolution_clock::now();
+    if (mode == "single") {
+        cv::Mat image = cv::imread(path);
 
-    // º∆À„≥÷–¯ ±º‰
-    // std::chrono::duration<double, std::milli> elapsed = end - start;
+        if (image.empty()) {
+            std::cerr << "Could not open or find the image at " << path << std::endl;
+            return -1;
+        }
 
-    //  ‰≥ˆ¥¶¿Ì ±º‰
-    // std::cout << "Processing time: " << elapsed.count() << " ms" << std::endl;
+        // ËÆ∞ÂΩïÂºÄÂßãÊó∂Èó¥
+        auto start = std::chrono::high_resolution_clock::now();
+
+        // Ë∞ÉÁî® detectProcess ÂáΩÊï∞
+        detectProcess(image, index);
+
+        // ËÆ∞ÂΩïÁªìÊùüÊó∂Èó¥
+        auto end = std::chrono::high_resolution_clock::now();
+
+        // ËÆ°ÁÆóÊåÅÁª≠Êó∂Èó¥
+        std::chrono::duration<double, std::milli> elapsed = end - start;
+
+        // ËæìÂá∫Â§ÑÁêÜÊó∂Èó¥
+        std::cout << "Processing time: " << elapsed.count() << " ms" << std::endl;
+
+    } else if (mode == "folder") {
+        std::vector<cv::Mat> images = ReadImages(path + "/*.jpg");
+
+        if (images.empty()) {
+            std::cerr << "No images found in the folder " << path << std::endl;
+            return -1;
+        }
+
+        for (const auto& image : images) {
+            // ËÆ∞ÂΩïÂºÄÂßãÊó∂Èó¥
+            auto start = std::chrono::high_resolution_clock::now();
+
+            // Ë∞ÉÁî® detectProcess ÂáΩÊï∞
+            detectProcess(image, index);
+
+            // ËÆ∞ÂΩïÁªìÊùüÊó∂Èó¥
+            auto end = std::chrono::high_resolution_clock::now();
+
+            // ËÆ°ÁÆóÊåÅÁª≠Êó∂Èó¥
+            std::chrono::duration<double, std::milli> elapsed = end - start;
+
+            // ËæìÂá∫Â§ÑÁêÜÊó∂Èó¥
+            std::cout << "Processing time: " << elapsed.count() << " ms" << std::endl;
+
+            index++;
+        }
+    } else {
+        std::cerr << "Invalid mode. Use 'single' or 'folder'." << std::endl;
+        return -1;
+    }
 
     std::cout << "Processing complete" << std::endl;
     return 0;
 }
+
