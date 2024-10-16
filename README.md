@@ -2,7 +2,11 @@
 
 使用Nanodet+YoloV8-Pose实现指针仪表的实时检测、高精度读数识别（借助ncnn框架）
 
-
+[2024.10.16]更新：
+1.指针仪表检测目标检测和关键点检测数据集：通过网盘分享的文件：指针仪表检测数据集与标注细节.zip
+链接: https://pan.baidu.com/s/19I3vs1c01DAdB2V3G67RlA?pwd=383j 提取码: 383j
+2.使用yolov8-pose训练模型时，对部分参数进行了修改，这里给出原始的训练工程：通过网盘分享的文件：ultralytics.zip
+链接: https://pan.baidu.com/s/1FG3-ONVURBYpfIqQOGLqrg?pwd=b8jf 提取码: b8jf
 
 ## 起
 
@@ -39,14 +43,6 @@
 ![微信截图_20240829174428.png](https://www.pnglog.com/Um5Zsn.png)
 
 ![1_processed_image.jpg](https://www.pnglog.com/veegqO.jpg)
-
-[2024.10.16]更新：
-1.指针仪表检测目标检测和关键点检测数据集：通过网盘分享的文件：指针仪表检测数据集与标注细节.zip
-链接: https://pan.baidu.com/s/19I3vs1c01DAdB2V3G67RlA?pwd=383j 提取码: 383j
-2.使用yolov8-pose训练模型时，对部分参数进行了修改，这里给出原始的训练工程：通过网盘分享的文件：ultralytics.zip
-链接: https://pan.baidu.com/s/1FG3-ONVURBYpfIqQOGLqrg?pwd=b8jf 提取码: b8jf
-
-
 
 
 ## 合
