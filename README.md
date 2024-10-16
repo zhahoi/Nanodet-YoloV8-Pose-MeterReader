@@ -51,3 +51,6 @@
 该仓库的代码是我最终修改的版本，验证过精度可以达到0.02Mpa左右，检测时间大概在90-140ms之间（没有gpu加速的情况）。如果觉得该代码有用的话，可以给个Star。同时给Star的人可以向我索要训练数据集和数据标注细节。
 
 以上。
+
+## Reference
+-[yolov8s-pose-ncnn](https://github.com/Rachel-liuqr/yolov8s-pose-ncnn)
