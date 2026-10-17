@@ -9,6 +9,9 @@
 -2.使用yolov8-pose训练模型时，对部分参数进行了修改，这里给出原始的训练工程：通过网盘分享的文件：ultralytics.zip
 链接: https://pan.baidu.com/s/1FG3-ONVURBYpfIqQOGLqrg?pwd=b8jf 提取码: b8jf
 
+-3.关键点检测数据集标注细节以及转换脚本:通过网盘分享的文件：标注细节.zip
+链接: https://pan.baidu.com/s/1NcmVSgXS1Dfc90UQW5JutQ?pwd=9vvm 提取码: 9vvm
+
 ## 起
 
 因为接手了一个指针仪表检测项目，而且要求实时性和检测精度都很高，因此便投入指针仪表检测和识别算法的研究。先前我在Github寻找一些灵感，发现有用Yolov5+DeepLabV3Plus来进行读数识别的，我自己也编写了代码实现了一遍，可以通过下面的链接看到我的实现:[YoloX-DeepLabV3Plus-MeterReader](https://github.com/zhahoi/YoloX-DeepLabV3Plus-MeterReader)。
